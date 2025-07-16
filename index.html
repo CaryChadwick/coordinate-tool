@@ -14,15 +14,10 @@
       background: white;
       padding: 10px;
       box-shadow: 0 0 5px rgba(0,0,0,0.3);
-      font-family: Arial, sans-serif;
     }
     textarea {
       width: 300px;
       height: 100px;
-    }
-    button {
-      margin-top: 5px;
-      margin-right: 5px;
     }
   </style>
   <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
@@ -30,10 +25,9 @@
 </head>
 <body>
   <div id="formDiv">
-    <p><strong>Enter coordinates (latitude,longitude,point label per line):</strong></p>
-    <textarea id="coordsInput">41.26645,-72.61229,Point A</textarea><br />
+    <p>Enter coordinates (lat,lon,label per line):</p>
+    <textarea id="coordsInput">41.8,-72.2,Point A</textarea><br />
     <button onclick="plotPoints()">Plot Points</button>
-    <button onclick="clearPoints()">Clear Map</button>
   </div>
   <div id="viewDiv"></div>
 
@@ -62,6 +56,7 @@
       });
 
       window.plotPoints = function () {
+        graphicsLayer.removeAll();
         const input = document.getElementById("coordsInput").value.trim();
         const lines = input.split("\n");
 
@@ -77,4 +72,28 @@
           const pointGraphic = new Graphic({
             geometry: point,
             symbol: {
-              typ
+              type: "simple-marker",
+              color: "blue",
+              size: 8
+            }
+          });
+
+          const labelGraphic = new Graphic({
+            geometry: point,
+            symbol: new TextSymbol({
+              text: label || "",
+              color: "black",
+              haloColor: "white",
+              haloSize: "1px",
+              yoffset: -20,
+              font: { size: 12, weight: "bold" }
+            })
+          });
+
+          graphicsLayer.addMany([pointGraphic, labelGraphic]);
+        });
+      };
+    });
+  </script>
+</body>
+</html>
