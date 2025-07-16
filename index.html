@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Coordinate Plotter</title>
+  <style>
+    html, body, #viewDiv {
+      height: 100%; margin: 0; padding: 0;
+    }
+    #formDiv {
+      position: absolute;
+      top: 10px; left: 10px;
+      z-index: 99;
+      background: white;
+      padding: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+    textarea {
+      width: 300px;
+      height: 100px;
+    }
+  </style>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
+  <script src="https://js.arcgis.com/4.29/"></script>
+</head>
+<body>
+  <div id="formDiv">
+    <p>Enter coordinates (lat,lon,label per line):</p>
+    <textarea id="coordsInput">41.8,-72.2,Point A</textarea><br />
+    <button onclick="plotPoints()">Plot Points</button>
+  </div>
+  <div id="viewDiv"></div>
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/Graphic",
+      "esri/layers/GraphicsLayer",
+      "esri/symbols/TextSymbol",
+      "esri/geometry/Point"
+    ], (Map, MapView, Graphic, GraphicsLayer, TextSymbol, Point) => {
+
+      const graphicsLayer = new GraphicsLayer();
+
+      const map = new Map({
+        basemap: "topo-vector",
+        layers: [graphicsLayer]
+      });
+
+      const view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [-72.2, 41.8],
+        zoom: 7
+      });
+
+      window.plotPoints = function () {
+        graphicsLayer.removeAll();
+        const input = document.getElementById("coordsInput").value.trim();
+        const lines = input.split("\n");
+
+        lines.forEach(line => {
+          const [lat, lon, label] = line.split(",").map(s => s.trim());
+          if (!lat || !lon) return;
+
+          const point = new Point({
+            latitude: parseFloat(lat),
+            longitude: parseFloat(lon)
+          });
+
+          const pointGraphic = new Graphic({
+            geometry: point,
+            symbol: {
+              type: "simple-marker",
+              color: "blue",
+              size: 8
+            }
+          });
+
+          const labelGraphic = new Graphic({
+            geometry: point,
+            symbol: new TextSymbol({
+              text: label || "",
+              color: "black",
+              haloColor: "white",
+              haloSize: "1px",
+              yoffset: -20,
+              font: { size: 12, weight: "bold" }
+            })
+          });
+
+          graphicsLayer.addMany([pointGraphic, labelGraphic]);
+        });
+      };
+    });
+  </script>
+</body>
+</html>
